@@ -36,6 +36,7 @@ export default function LoginPage() {
   };
 
   const handleAuthError = (error: any) => {
+    console.error("Authentication error:", error);
     setLoading(false);
     toast({
       variant: 'destructive',
