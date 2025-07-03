@@ -11,7 +11,6 @@ import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -153,7 +152,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col min-h-screen">
         <header className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <Logo className="h-8 w-8" />
@@ -184,7 +183,7 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col min-h-screen bg-background">
       <header className="flex items-center justify-between p-4 border-b shrink-0">
         <div className="flex items-center gap-2">
           <Logo className="h-8 w-8" />
@@ -198,26 +197,26 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto p-4 md:p-6 lg:p-8 h-full">
-          <Card className="flex flex-col">
+      <main className="flex-1">
+        <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+          <Card>
             <CardHeader>
               <CardTitle>Create & Upload</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col gap-4">
-              <Tabs defaultValue="text" className="flex-1 flex flex-col">
+            <CardContent>
+              <Tabs defaultValue="text">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="text">Add Text</TabsTrigger>
                   <TabsTrigger value="file">Upload File</TabsTrigger>
                 </TabsList>
-                <TabsContent value="text" className="flex-1 flex flex-col gap-2 mt-4">
-                  <Textarea
-                    placeholder="Type your text here..."
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    className="flex-1 text-base"
-                  />
-                  <div className="flex gap-2">
+                <TabsContent value="text" className="mt-4">
+                  <div className="grid gap-4">
+                    <Textarea
+                      placeholder="Type your text here..."
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      className="text-base min-h-[150px]"
+                    />
                     <Button onClick={handleAddText} className="w-full">Save Text</Button>
                   </div>
                 </TabsContent>
@@ -234,17 +233,17 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
           
-          <Card className="flex flex-col">
+          <Card>
             <CardHeader>
               <CardTitle>Your Items</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 overflow-hidden">
-                <Tabs defaultValue="texts" className="h-full flex flex-col">
+            <CardContent>
+                <Tabs defaultValue="texts">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="texts">Texts</TabsTrigger>
                         <TabsTrigger value="files">Files</TabsTrigger>
                     </TabsList>
-                    <ScrollArea className="flex-1 mt-4">
+                    <div className="mt-4">
                         <TabsContent value="texts" className="m-0">
                             {texts.length > 0 ? (
                                 <div className="space-y-4">
@@ -282,7 +281,7 @@ export default function DashboardPage() {
                                 </div>
                              ) : (<p className="text-muted-foreground text-center p-8">No files uploaded yet.</p>)}
                         </TabsContent>
-                    </ScrollArea>
+                    </div>
                 </Tabs>
             </CardContent>
           </Card>
