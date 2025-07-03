@@ -17,10 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { FileIcon } from '@/components/file-icon';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { summarizeText } from '@/ai/flows/summarize-text';
-import { extractMetadata } from '@/ai/flows/extract-metadata';
-import { Copy, Download, Loader2, LogOut, Sparkles, Trash2, Info } from 'lucide-react';
+import { Copy, Download, Loader2, LogOut, Trash2 } from 'lucide-react';
 
 interface TextItem {
   id: string;
@@ -45,10 +42,6 @@ export default function DashboardPage() {
   const [textInput, setTextInput] = useState('');
   const [fileInput, setFileInput] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [summarizing, setSummarizing] = useState(false);
-  const [extracting, setExtracting] = useState(false);
-  const [aiResult, setAiResult] = useState({ title: '', content: '' });
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   // Effect for handling authentication state changes
   useEffect(() => {
@@ -157,43 +150,6 @@ export default function DashboardPage() {
       toast({ variant: 'destructive', title: 'Deletion failed', description: (error as Error).message });
     }
   };
-  
-  const handleSummarize = async (text: string) => {
-    setSummarizing(true);
-    setIsAiModalOpen(true);
-    try {
-      const result = await summarizeText({ text });
-      setAiResult({ title: 'Summary', content: result.summary });
-    } catch (error) {
-       setAiResult({ title: 'Error', content: 'Could not generate summary.' });
-    } finally {
-      setSummarizing(false);
-    }
-  }
-
-  const toDataURL = (url: string): Promise<string> =>
-    fetch(url)
-      .then(response => response.blob())
-      .then(blob => new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onloadend = () => resolve(reader.result as string)
-        reader.onerror = reject
-        reader.readAsDataURL(blob)
-      }));
-
-  const handleExtractMetadata = async (fileUrl: string) => {
-    setExtracting(true);
-    setIsAiModalOpen(true);
-    try {
-      const dataUri = await toDataURL(fileUrl);
-      const result = await extractMetadata({ fileDataUri: dataUri });
-      setAiResult({ title: 'Extracted Metadata', content: result.metadata });
-    } catch (error) {
-      setAiResult({ title: 'Error', content: 'Could not extract metadata.' });
-    } finally {
-      setExtracting(false);
-    }
-  }
 
   if (loading) {
     return (
@@ -262,10 +218,7 @@ export default function DashboardPage() {
                     className="flex-1 text-base"
                   />
                   <div className="flex gap-2">
-                    <Button onClick={handleAddText} className="flex-1">Save Text</Button>
-                    <Button variant="outline" onClick={() => handleSummarize(textInput)} disabled={!textInput.trim()}>
-                      <Sparkles className="mr-2 h-4 w-4" /> Summarize
-                    </Button>
+                    <Button onClick={handleAddText} className="w-full">Save Text</Button>
                   </div>
                 </TabsContent>
                 <TabsContent value="file" className="mt-4">
@@ -301,7 +254,6 @@ export default function DashboardPage() {
                                                 <p className="flex-1 break-all pt-1">{text.content}</p>
                                                 <div className="flex gap-1">
                                                     <Button variant="ghost" size="icon" onClick={() => navigator.clipboard.writeText(text.content).then(() => toast({title: 'Copied to clipboard!'}))}><Copy className="h-4 w-4" /></Button>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleSummarize(text.content)}><Sparkles className="h-4 w-4" /></Button>
                                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteText(text.id)}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
                                             </AlertDescription>
@@ -322,7 +274,6 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div className="flex gap-1">
                                                     <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleExtractMetadata(file.url)}><Info className="h-4 w-4" /></Button>
                                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteFile(file.fullPath)}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
                                             </div>
@@ -337,20 +288,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       </main>
-
-      <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {(summarizing || extracting) ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-primary" />}
-              {(summarizing || extracting) ? 'Generating...' : aiResult.title}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="prose prose-sm dark:prose-invert max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-1">
-              {aiResult.content}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
