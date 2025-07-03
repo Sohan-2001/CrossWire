@@ -12,12 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { FileIcon } from '@/components/file-icon';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { summarizeText } from '@/ai/flows/summarize-text';
 import { extractMetadata } from '@/ai/flows/extract-metadata';
@@ -51,45 +50,61 @@ export default function DashboardPage() {
   const [aiResult, setAiResult] = useState({ title: '', content: '' });
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-  const fetchTexts = useCallback((uid: string) => {
-    const textsRef = ref(db, `users/${uid}/texts`);
-    onValue(textsRef, (snapshot) => {
-      const data = snapshot.val();
-      const loadedTexts: TextItem[] = data ? Object.entries(data).map(([id, value]: [string, any]) => ({
-        id,
-        ...value,
-      })).sort((a, b) => b.timestamp - a.timestamp) : [];
-      setTexts(loadedTexts);
-    });
-  }, []);
-
-  const fetchFiles = useCallback(async (uid: string) => {
-    const filesRef = storageRef(storage, `users/${uid}/files`);
-    const res = await listAll(filesRef);
-    const filesData = await Promise.all(res.items.map(async (itemRef) => {
-      const url = await getDownloadURL(itemRef);
-      return {
-        name: itemRef.name,
-        fullPath: itemRef.fullPath,
-        url,
-      };
-    }));
-    setFiles(filesData);
-  }, []);
-
+  // Effect for handling authentication state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-        fetchTexts(user.uid);
-        fetchFiles(user.uid);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
       } else {
+        setUser(null);
         router.push('/login');
       }
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [router, fetchTexts, fetchFiles]);
+  }, [router]);
+  
+  const fetchFiles = useCallback(async (uid: string) => {
+    try {
+      const filesStorageRef = storageRef(storage, `users/${uid}/files`);
+      const res = await listAll(filesStorageRef);
+      const filesData = await Promise.all(res.items.map(async (itemRef) => {
+        const url = await getDownloadURL(itemRef);
+        return {
+          name: itemRef.name,
+          fullPath: itemRef.fullPath,
+          url,
+        };
+      }));
+      setFiles(filesData);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error loading files', description: (error as Error).message });
+    }
+  }, [toast]);
+  
+  // Effect for fetching user data when user is authenticated
+  useEffect(() => {
+    if (user) {
+      fetchFiles(user.uid);
+  
+      const textsRef = ref(db, `users/${user.uid}/texts`);
+      const unsubscribe = onValue(textsRef, (snapshot) => {
+        const data = snapshot.val();
+        const loadedTexts: TextItem[] = data ? Object.entries(data).map(([id, value]: [string, any]) => ({
+          id,
+          ...value,
+        })).sort((a, b) => b.timestamp - a.timestamp) : [];
+        setTexts(loadedTexts);
+      }, (error) => {
+        toast({ variant: 'destructive', title: 'Error loading texts', description: error.message });
+      });
+  
+      return () => unsubscribe();
+    } else {
+      setTexts([]);
+      setFiles([]);
+    }
+  }, [user, toast, fetchFiles]);
   
   const handleSignOut = async () => {
     await signOut(auth);
