@@ -16,7 +16,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { FileIcon } from '@/components/file-icon';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Copy, Download, Loader2, LogOut, Trash2 } from 'lucide-react';
+import { Copy, Download, Loader2, LogOut, Trash2, Info } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface TextItem {
   id: string;
@@ -41,6 +48,7 @@ export default function DashboardPage() {
   const [textInput, setTextInput] = useState('');
   const [fileInput, setFileInput] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isAboutDialogOpen, setIsAboutDialogOpen] = useState(false);
 
   // Effect for handling authentication state changes
   useEffect(() => {
@@ -204,6 +212,12 @@ export default function DashboardPage() {
           <h1 className="text-xl font-bold text-foreground">CrossWire</h1>
         </div>
         <div className="flex items-center gap-4">
+          <Button variant="link" className="hidden sm:inline-flex" onClick={() => setIsAboutDialogOpen(true)}>
+            About
+          </Button>
+          <Button variant="ghost" size="icon" className="sm:hidden" onClick={() => setIsAboutDialogOpen(true)} aria-label="About">
+            <Info className="h-5 w-5" />
+          </Button>
           <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
           <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
             <LogOut className="h-5 w-5" />
@@ -309,6 +323,29 @@ export default function DashboardPage() {
           </Card>
         </div>
       </main>
+
+      <Dialog open={isAboutDialogOpen} onOpenChange={setIsAboutDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>About CrossWire</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4 text-sm text-foreground">
+            <p>
+              CrossWire is a seamless utility designed to bridge the gap between your devices. Easily share text snippets and files without the hassle of emailing yourself or using clunky cloud storage interfaces.
+            </p>
+            <p>
+              <strong>How it works:</strong> Simply log in on any device. Anything you save—be it a piece of text or a file—is instantly available across all your other logged-in sessions. It's your personal, cross-device clipboard.
+            </p>
+            <div className="pt-4 text-center text-xs text-muted-foreground">
+              <p>Developed with ❤️ by</p>
+              <p className="font-semibold text-foreground">Mask Solutions</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsAboutDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
