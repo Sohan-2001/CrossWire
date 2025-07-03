@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { FileIcon } from '@/components/file-icon';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { summarizeText } from '@/ai/flows/summarize-text';
 import { extractMetadata } from '@/ai/flows/extract-metadata';
 import { Copy, Download, Loader2, LogOut, Sparkles, Trash2, Info } from 'lucide-react';
@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [summarizing, setSummarizing] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [aiResult, setAiResult] = useState({ title: '', content: '' });
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const fetchTexts = useCallback((uid: string) => {
     const textsRef = ref(db, `users/${uid}/texts`);
@@ -144,6 +145,7 @@ export default function DashboardPage() {
   
   const handleSummarize = async (text: string) => {
     setSummarizing(true);
+    setIsAiModalOpen(true);
     try {
       const result = await summarizeText({ text });
       setAiResult({ title: 'Summary', content: result.summary });
@@ -166,6 +168,7 @@ export default function DashboardPage() {
 
   const handleExtractMetadata = async (fileUrl: string) => {
     setExtracting(true);
+    setIsAiModalOpen(true);
     try {
       const dataUri = await toDataURL(fileUrl);
       const result = await extractMetadata({ fileDataUri: dataUri });
@@ -243,16 +246,12 @@ export default function DashboardPage() {
                     onChange={(e) => setTextInput(e.target.value)}
                     className="flex-1 text-base"
                   />
-                  <Dialog>
-                    <div className="flex gap-2">
-                      <Button onClick={handleAddText} className="flex-1">Save Text</Button>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" onClick={() => handleSummarize(textInput)} disabled={!textInput.trim()}>
-                          <Sparkles className="mr-2 h-4 w-4" /> Summarize
-                        </Button>
-                      </DialogTrigger>
-                    </div>
-                  </Dialog>
+                  <div className="flex gap-2">
+                    <Button onClick={handleAddText} className="flex-1">Save Text</Button>
+                    <Button variant="outline" onClick={() => handleSummarize(textInput)} disabled={!textInput.trim()}>
+                      <Sparkles className="mr-2 h-4 w-4" /> Summarize
+                    </Button>
+                  </div>
                 </TabsContent>
                 <TabsContent value="file" className="mt-4">
                   <div className="space-y-4">
@@ -287,11 +286,7 @@ export default function DashboardPage() {
                                                 <p className="flex-1 break-all pt-1">{text.content}</p>
                                                 <div className="flex gap-1">
                                                     <Button variant="ghost" size="icon" onClick={() => navigator.clipboard.writeText(text.content).then(() => toast({title: 'Copied to clipboard!'}))}><Copy className="h-4 w-4" /></Button>
-                                                    <Dialog>
-                                                        <DialogTrigger asChild>
-                                                            <Button variant="ghost" size="icon" onClick={() => handleSummarize(text.content)}><Sparkles className="h-4 w-4" /></Button>
-                                                        </DialogTrigger>
-                                                    </Dialog>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleSummarize(text.content)}><Sparkles className="h-4 w-4" /></Button>
                                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteText(text.id)}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
                                             </AlertDescription>
@@ -312,11 +307,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div className="flex gap-1">
                                                     <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
-                                                    <Dialog>
-                                                        <DialogTrigger asChild>
-                                                          <Button variant="ghost" size="icon" onClick={() => handleExtractMetadata(file.url)}><Info className="h-4 w-4" /></Button>
-                                                        </DialogTrigger>
-                                                    </Dialog>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleExtractMetadata(file.url)}><Info className="h-4 w-4" /></Button>
                                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteFile(file.fullPath)}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
                                             </div>
@@ -332,17 +323,19 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {(summarizing || extracting) ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-primary" />}
-            {(summarizing || extracting) ? 'Generating...' : aiResult.title}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="prose prose-sm dark:prose-invert max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-1">
-            {aiResult.content}
-        </div>
-      </DialogContent>
+      <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {(summarizing || extracting) ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-primary" />}
+              {(summarizing || extracting) ? 'Generating...' : aiResult.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="prose prose-sm dark:prose-invert max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-1">
+              {aiResult.content}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
