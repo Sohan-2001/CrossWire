@@ -4,14 +4,14 @@ import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBKacfaGKJoh7-2q2zgKYxDGGuRy5v90mU",
-  authDomain: "masksolutions-464416.firebaseapp.com",
-  databaseURL: "https://masksolutions-464416-default-rtdb.firebaseio.com",
-  projectId: "masksolutions-464416",
-  storageBucket: "masksolutions-464416.firebasestorage.app",
-  messagingSenderId: "661722209769",
-  appId: "1:661722209769:web:cc8ae0f4eb02031f3fff78",
-  measurementId: "G-SXMYH21YJ4"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
