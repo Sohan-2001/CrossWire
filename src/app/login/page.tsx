@@ -139,7 +139,7 @@ export default function LoginPage() {
             </div>
           </div>
           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-76.2 64.5c-20.5-16.2-49-26.6-80.6-26.6-62.3 0-113.5 49.5-125.5 112.3h251.7c1.3-10.9 2.1-22.1 2.1-33.6 0-79.7-60.9-143.4-140.7-143.4-78.2 0-141.6 63.4-141.6 141.6s63.4 141.6 141.6 141.6c47.5 0 88-23.4 114-58.9l74.2 64.5C411.3 478.9 336.1 512 248 512z"></path></svg>}
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <svg className="mr-2 h-4 w-4" role="img" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.08-2.58 2.26-4.8 2.26-5.72 0-9.5-4.46-9.5-9.5s3.78-9.5 9.5-9.5c3.33 0 4.96 1.3 6.13 2.44l2.7-2.7C19.04 1.36 16.14 0 12.48 0 5.88 0 0 5.92 0 12.47s5.88 12.47 12.48 12.47c7.1 0 12.07-4.74 12.07-12.14 0-.82-.1-1.48-.25-2.15z"/></svg>}
             Google
           </Button>
         </CardContent>
