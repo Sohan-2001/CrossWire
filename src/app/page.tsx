@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { FileIcon } from '@/components/file-icon';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Copy, Download, Loader2, LogOut, Trash2 } from 'lucide-react';
 
 interface TextItem {
@@ -68,8 +68,9 @@ export default function DashboardPage() {
           url,
         };
       }));
-      setFiles(filesData);
+      setFiles(filesData.sort((a, b) => a.name.localeCompare(b.name)));
     } catch (error) {
+      console.error("Error loading files:", error)
       toast({ variant: 'destructive', title: 'Error loading files', description: (error as Error).message });
     }
   }, [toast]);
@@ -80,7 +81,7 @@ export default function DashboardPage() {
       fetchFiles(user.uid);
   
       const textsRef = ref(db, `users/${user.uid}/texts`);
-      const unsubscribe = onValue(textsRef, (snapshot) => {
+      const unsubscribeTexts = onValue(textsRef, (snapshot) => {
         const data = snapshot.val();
         const loadedTexts: TextItem[] = data ? Object.entries(data).map(([id, value]: [string, any]) => ({
           id,
@@ -88,10 +89,13 @@ export default function DashboardPage() {
         })).sort((a, b) => b.timestamp - a.timestamp) : [];
         setTexts(loadedTexts);
       }, (error) => {
+        console.error("Error loading texts:", error);
         toast({ variant: 'destructive', title: 'Error loading texts', description: error.message });
       });
   
-      return () => unsubscribe();
+      return () => {
+        unsubscribeTexts();
+      };
     } else {
       setTexts([]);
       setFiles([]);
@@ -107,19 +111,27 @@ export default function DashboardPage() {
     if (!textInput.trim() || !user) return;
     const textsRef = ref(db, `users/${user.uid}/texts`);
     const newTextRef = push(textsRef);
-    await set(newTextRef, {
-      content: textInput,
-      timestamp: Date.now(),
-    });
-    setTextInput('');
-    toast({ title: 'Text saved!' });
+    try {
+      await set(newTextRef, {
+        content: textInput,
+        timestamp: Date.now(),
+      });
+      setTextInput('');
+      toast({ title: 'Text saved!' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error saving text', description: (error as Error).message });
+    }
   };
 
   const handleDeleteText = async (textId: string) => {
     if (!user) return;
     const textRef = ref(db, `users/${user.uid}/texts/${textId}`);
-    await remove(textRef);
-    toast({ title: 'Text deleted.' });
+    try {
+      await remove(textRef);
+      toast({ title: 'Text deleted.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error deleting text', description: (error as Error).message });
+    }
   };
   
   const handleFileUpload = async () => {
@@ -133,6 +145,8 @@ export default function DashboardPage() {
     } catch (error) {
       toast({ variant: 'destructive', title: 'Upload failed', description: (error as Error).message });
     } finally {
+      const fileInputEl = document.getElementById('file-upload-input') as HTMLInputElement;
+      if (fileInputEl) fileInputEl.value = '';
       setFileInput(null);
       setUploading(false);
     }
@@ -153,7 +167,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <header className="flex items-center justify-between p-4 border-b">
+        <header className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
           <div className="flex items-center gap-2">
             <Logo className="h-8 w-8" />
             <h1 className="text-xl font-bold">CrossWire</h1>
@@ -183,10 +197,10 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="flex items-center justify-between p-4 border-b shrink-0">
-        <div className="flex items-center gap-2">
-          <Logo className="h-8 w-8" />
+    <div className="flex flex-col min-h-screen bg-muted">
+      <header className="flex items-center justify-between p-4 border-b shrink-0 bg-card shadow-sm">
+        <div className="flex items-center gap-3">
+          <Logo className="h-8 w-8 text-primary" />
           <h1 className="text-xl font-bold text-foreground">CrossWire</h1>
         </div>
         <div className="flex items-center gap-4">
@@ -197,9 +211,9 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="flex-1">
-        <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
-          <Card>
+      <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto">
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle>Create & Upload</CardTitle>
             </CardHeader>
@@ -215,14 +229,14 @@ export default function DashboardPage() {
                       placeholder="Type your text here..."
                       value={textInput}
                       onChange={(e) => setTextInput(e.target.value)}
-                      className="text-base min-h-[150px]"
+                      className="text-sm min-h-[150px]"
                     />
-                    <Button onClick={handleAddText} className="w-full">Save Text</Button>
+                    <Button onClick={handleAddText} disabled={!textInput.trim()}>Save Text</Button>
                   </div>
                 </TabsContent>
                 <TabsContent value="file" className="mt-4">
                   <div className="space-y-4">
-                    <Input type="file" onChange={(e) => setFileInput(e.target.files?.[0] || null)} />
+                    <Input id="file-upload-input" type="file" onChange={(e) => setFileInput(e.target.files?.[0] || null)} />
                     <Button onClick={handleFileUpload} disabled={!fileInput || uploading} className="w-full">
                       {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Upload File
@@ -233,53 +247,61 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle>Your Items</CardTitle>
             </CardHeader>
             <CardContent>
                 <Tabs defaultValue="texts">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="texts">Texts</TabsTrigger>
-                        <TabsTrigger value="files">Files</TabsTrigger>
+                        <TabsTrigger value="texts">Texts ({texts.length})</TabsTrigger>
+                        <TabsTrigger value="files">Files ({files.length})</TabsTrigger>
                     </TabsList>
                     <div className="mt-4">
                         <TabsContent value="texts" className="m-0">
+                          <ScrollArea className="h-[350px] w-full">
                             {texts.length > 0 ? (
-                                <div className="space-y-4">
+                                <div className="space-y-2 pr-4">
                                     {texts.map((text) => (
-                                        <Alert key={text.id}>
-                                            <AlertDescription className="flex justify-between items-start gap-4">
-                                                <p className="flex-1 break-all pt-1">{text.content}</p>
-                                                <div className="flex gap-1">
-                                                    <Button variant="ghost" size="icon" onClick={() => navigator.clipboard.writeText(text.content).then(() => toast({title: 'Copied to clipboard!'}))}><Copy className="h-4 w-4" /></Button>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteText(text.id)}><Trash2 className="h-4 w-4" /></Button>
-                                                </div>
-                                            </AlertDescription>
-                                        </Alert>
+                                        <div key={text.id} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
+                                            <p className="flex-1 break-all text-sm text-foreground">{text.content}</p>
+                                            <div className="flex gap-1">
+                                                <Button variant="ghost" size="icon" onClick={() => navigator.clipboard.writeText(text.content).then(() => toast({title: 'Copied to clipboard!'}))}><Copy className="h-4 w-4" /></Button>
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteText(text.id)}><Trash2 className="h-4 w-4" /></Button>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-                            ) : (<p className="text-muted-foreground text-center p-8">No texts saved yet.</p>)}
+                            ) : (
+                              <div className="flex items-center justify-center h-[350px]">
+                                <p className="text-muted-foreground text-center">No texts saved yet.</p>
+                              </div>
+                            )}
+                          </ScrollArea>
                         </TabsContent>
                         <TabsContent value="files" className="m-0">
-                             {files.length > 0 ? (
-                                <div className="space-y-4">
-                                    {files.map((file) => (
-                                        <Alert key={file.fullPath}>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
+                             <ScrollArea className="h-[350px] w-full">
+                                {files.length > 0 ? (
+                                    <div className="space-y-2 pr-4">
+                                        {files.map((file) => (
+                                            <div key={file.fullPath} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
+                                                <div className="flex items-center gap-3 overflow-hidden">
                                                     <FileIcon filename={file.name} />
-                                                    <span className="font-medium break-all">{file.name}</span>
+                                                    <span className="font-medium break-all text-sm text-foreground truncate">{file.name}</span>
                                                 </div>
-                                                <div className="flex gap-1">
+                                                <div className="flex gap-1 shrink-0">
                                                     <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
                                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteFile(file.fullPath)}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
                                             </div>
-                                        </Alert>
-                                    ))}
-                                </div>
-                             ) : (<p className="text-muted-foreground text-center p-8">No files uploaded yet.</p>)}
+                                        ))}
+                                    </div>
+                                ) : (
+                                  <div className="flex items-center justify-center h-[350px]">
+                                    <p className="text-muted-foreground text-center">No files uploaded yet.</p>
+                                  </div>
+                                )}
+                             </ScrollArea>
                         </TabsContent>
                     </div>
                 </Tabs>
