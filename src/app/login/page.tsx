@@ -115,7 +115,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Logo className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Cross Device File Handoff</CardTitle>
+          <CardTitle className="text-2xl">CrossWire</CardTitle>
           <CardDescription>Sign in or create an account to continue</CardDescription>
         </CardHeader>
         <CardContent>

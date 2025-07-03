@@ -201,7 +201,7 @@ export default function DashboardPage() {
         <header className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <Logo className="h-8 w-8" />
-            <h1 className="text-xl font-bold">Cross Device File Handoff</h1>
+            <h1 className="text-xl font-bold">CrossWire</h1>
           </div>
           <Skeleton className="h-10 w-24" />
         </header>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
       <header className="flex items-center justify-between p-4 border-b shrink-0">
         <div className="flex items-center gap-2">
           <Logo className="h-8 w-8" />
-          <h1 className="text-xl font-bold text-foreground">Cross Device File Handoff</h1>
+          <h1 className="text-xl font-bold text-foreground">CrossWire</h1>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>

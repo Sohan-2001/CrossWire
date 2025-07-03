@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Cross Device File Handoff',
+  title: 'CrossWire',
   description: 'Seamlessly handoff files and text across your devices.',
 };
 
