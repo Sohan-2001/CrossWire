@@ -24,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 
 interface TextItem {
   id: string;
@@ -211,7 +212,8 @@ export default function DashboardPage() {
           <Logo className="h-8 w-8 text-primary" />
           <h1 className="text-xl font-bold text-foreground">CrossWire</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <ThemeSwitcher />
           <Button variant="link" className="hidden sm:inline-flex" onClick={() => setIsAboutDialogOpen(true)}>
             About
           </Button>
