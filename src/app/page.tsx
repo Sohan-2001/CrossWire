@@ -185,7 +185,7 @@ export default function DashboardPage() {
     const nameWithoutExtension = lastDotIndex !== -1 ? originalName.substring(0, lastDotIndex) : originalName;
     const extension = lastDotIndex !== -1 ? originalName.substring(lastDotIndex) : '';
     
-    const newFileName = nameWithoutExtension.substring(0, 10) + extension;
+    const newFileName = nameWithoutExtension.substring(0, 5) + extension;
     
     const fileRef = storageRef(storage, `users/${user.uid}/files/${newFileName}`);
     try {
@@ -398,12 +398,12 @@ export default function DashboardPage() {
                                   {files.length > 0 ? (
                                       <div className="space-y-2 pr-4">
                                           {files.map((file) => (
-                                              <div key={file.fullPath} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                                  <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
+                                              <div key={file.fullPath} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg border transition-colors hover:bg-accent">
+                                                  <div className="flex items-center gap-3 overflow-hidden">
                                                       <FileIcon filename={file.name} />
                                                       <span className="font-medium text-sm text-foreground truncate">{file.name}</span>
                                                   </div>
-                                                  <div className="flex gap-1 shrink-0">
+                                                  <div className="flex gap-1 self-end sm:self-auto">
                                                       <a href={file.url} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button></a>
                                                       <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
                                                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'file', id: file.fullPath }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
