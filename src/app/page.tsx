@@ -26,6 +26,16 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 
 interface TextItem {
@@ -59,6 +69,9 @@ export default function DashboardPage() {
   const [isAboutDialogOpen, setIsAboutDialogOpen] = useState(false);
   const [selectedText, setSelectedText] = useState<TextItem | null>(null);
   const [isTextDetailOpen, setIsTextDetailOpen] = useState(false);
+
+  const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ type: 'text' | 'file'; id: string } | null>(null);
 
 
   // Effect for handling authentication state changes
@@ -189,6 +202,17 @@ export default function DashboardPage() {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete || !user) return;
+
+    if (itemToDelete.type === 'text') {
+      await handleDeleteText(itemToDelete.id);
+    } else {
+      await handleDeleteFile(itemToDelete.id);
+    }
+    setItemToDelete(null);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -314,7 +338,7 @@ export default function DashboardPage() {
                                                 <p className="flex-1 font-medium break-all text-sm text-foreground truncate">{text.heading}</p>
                                                 <div className="flex gap-1">
                                                     <Button variant="ghost" size="icon" onClick={() => { setSelectedText(text); setIsTextDetailOpen(true); }}><Eye className="h-4 w-4" /></Button>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteText(text.id)}><Trash2 className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'text', id: text.id }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
                                             </div>
                                         ))}
@@ -345,7 +369,7 @@ export default function DashboardPage() {
                                                     </div>
                                                     <div className="flex gap-1 shrink-0">
                                                         <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
-                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteFile(file.fullPath)}><Trash2 className="h-4 w-4" /></Button>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'file', id: file.fullPath }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -419,6 +443,31 @@ export default function DashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isConfirmDeleteDialogOpen} onOpenChange={(open) => {
+        setIsConfirmDeleteDialogOpen(open);
+        if (!open) {
+          setItemToDelete(null);
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your {itemToDelete?.type === 'text' ? 'text snippet' : 'file'} and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
