@@ -395,6 +395,7 @@ export default function DashboardPage() {
                                                       <span className="font-medium break-all text-sm text-foreground truncate">{file.name}</span>
                                                   </div>
                                                   <div className="flex gap-1 shrink-0">
+                                                      <a href={file.url} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button></a>
                                                       <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
                                                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'file', id: file.fullPath }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
                                                   </div>
