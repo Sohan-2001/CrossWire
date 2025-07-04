@@ -375,7 +375,7 @@ export default function DashboardPage() {
                           <TabsContent value="texts" className="m-0">
                             <ScrollArea className="h-[350px] w-full">
                               {texts.length > 0 ? (
-                                  <div className="space-y-2 pr-4">
+                                  <div className="space-y-2">
                                       {texts.map((text) => (
                                           <div key={text.id} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
                                               <p className="flex-1 font-medium text-sm text-foreground truncate">{text.heading}</p>
@@ -396,10 +396,10 @@ export default function DashboardPage() {
                           <TabsContent value="files" className="m-0">
                                <ScrollArea className="h-[350px] w-full">
                                   {files.length > 0 ? (
-                                      <div className="space-y-2 pr-4">
+                                      <div className="space-y-2">
                                           {files.map((file) => (
                                               <div key={file.fullPath} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                                  <div className="flex items-center gap-3 overflow-hidden">
+                                                  <div className="flex flex-1 items-center gap-3 overflow-hidden">
                                                       <FileIcon filename={file.name} />
                                                       <span className="font-medium text-sm text-foreground truncate">{file.name}</span>
                                                   </div>
