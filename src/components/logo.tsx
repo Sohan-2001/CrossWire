@@ -11,9 +11,28 @@ export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    <path d="M10 3v2a4 4 0 0 0 4 4h2" />
-    <path d="M14 3.522A4 4 0 0 1 18 7v10a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h4" />
-    <path d="m14 13-4 4" />
-    <path d="m10 13 4 4" />
+    <circle cx="12" cy="12" r="3" />
+    <line x1="12" y1="9" x2="12" y2="5" />
+    <circle cx="12" cy="4" r="1.5" fill="currentColor" stroke="none" />
+    <g transform="rotate(60 12 12)">
+      <line x1="12" y1="9" x2="12" y2="5" />
+      <circle cx="12" cy="4" r="1.5" fill="currentColor" stroke="none" />
+    </g>
+    <g transform="rotate(120 12 12)">
+      <line x1="12" y1="9" x2="12" y2="5" />
+      <circle cx="12" cy="4" r="1.5" fill="currentColor" stroke="none" />
+    </g>
+    <g transform="rotate(180 12 12)">
+      <line x1="12" y1="9" x2="12" y2="5" />
+      <circle cx="12" cy="4" r="1.5" fill="currentColor" stroke="none" />
+    </g>
+    <g transform="rotate(240 12 12)">
+      <line x1="12" y1="9" x2="12" y2="5" />
+      <circle cx="12" cy="4" r="1.5" fill="currentColor" stroke="none" />
+    </g>
+    <g transform="rotate(300 12 12)">
+      <line x1="12" y1="9" x2="12" y2="5" />
+      <circle cx="12" cy="4" r="1.5" fill="currentColor" stroke="none" />
+    </g>
   </svg>
 );
