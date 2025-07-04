@@ -401,10 +401,10 @@ export default function DashboardPage() {
           </DialogHeader>
           <div className="space-y-4 py-4 text-sm text-foreground">
             <p>
-              CrossWire is a seamless utility designed to bridge the gap between your devices. Easily share text snippets and files without the hassle of emailing yourself or using clunky cloud storage interfaces.
+              CrossWire makes it easy to share text and files between your different devices, like your phone and computer.
             </p>
             <p>
-              <strong>How it works:</strong> Simply log in on any device. Anything you save—be it a piece of text or a file—is instantly available across all your other logged-in sessions. It's your personal, cross-device clipboard.
+              <strong>How it works:</strong> Log in on any device. Anything you save here will instantly appear on your other devices. Think of it as a shared clipboard for everything you use.
             </p>
             <div className="pt-4 text-center text-xs text-muted-foreground">
               <p>Developed with ❤️ by</p>
