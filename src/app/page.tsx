@@ -9,7 +9,7 @@ import { auth, db, storage } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -79,9 +79,12 @@ export default function DashboardPage() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      if (!currentUser) {
+        // No redirect, show welcome message
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [router]);
   
   const fetchFiles = useCallback(async (uid: string) => {
     try {
@@ -223,21 +226,8 @@ export default function DashboardPage() {
           </div>
           <Skeleton className="h-10 w-24" />
         </header>
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
-          <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto">
-            <Card>
-              <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
-              <CardContent><Skeleton className="h-40 w-full" /></CardContent>
-            </Card>
-            <Card>
-              <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
-              <CardContent className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </CardContent>
-            </Card>
-          </div>
+        <main className="flex-1 p-4 md:p-6 lg:p-8 flex items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </main>
       </div>
     );
@@ -280,118 +270,150 @@ export default function DashboardPage() {
       </header>
 
       <main className="flex-1 p-4 md:p-6 lg:p-8">
-        <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle>Create & Upload</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="text">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="text">Add Text</TabsTrigger>
-                  <TabsTrigger value="file">Upload File</TabsTrigger>
-                </TabsList>
-                <TabsContent value="text" className="mt-4">
-                  <div className="grid gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="heading">Heading</Label>
-                      <Input id="heading" placeholder="A short, descriptive heading..." value={headingInput} onChange={(e) => setHeadingInput(e.target.value)} required />
+        {!user ? (
+          <div className="max-w-4xl mx-auto">
+            <Card className="shadow-lg animate-in fade-in-50 duration-500">
+              <CardHeader className="text-center p-6 sm:p-8">
+                <CardTitle className="text-3xl sm:text-4xl font-headline tracking-tight">Welcome to CrossWire!</CardTitle>
+                <CardDescription className="text-base sm:text-lg text-muted-foreground mt-2">
+                  Your simple bridge between devices.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-base font-roboto p-6 sm:p-8 pt-0">
+                <p className="mb-6 text-center">
+                  Ever wanted to send a link, a note, or a file from your phone to your computer (or the other way around) without the hassle of emailing it to yourself? CrossWire makes it simple.
+                </p>
+                <div className="bg-accent/50 rounded-lg p-4 mb-6">
+                    <ul className="list-none space-y-3">
+                      <li className="flex items-start">
+                        <span className="text-primary mr-3 mt-1">✔</span>
+                        <span>
+                          <strong>Send Text:</strong> Instantly share notes and links across all your logged-in devices.
+                        </span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-3 mt-1">✔</span>
+                        <span>
+                           <strong>Transfer Files:</strong> Quickly move photos, documents, and other files without needing a cable.
+                        </span>
+                      </li>
+                       <li className="flex items-start">
+                        <span className="text-primary mr-3 mt-1">✔</span>
+                        <span>
+                           <strong>Private & Secure:</strong> Everything you save is securely tied to your personal account.
+                        </span>
+                      </li>
+                    </ul>
+                </div>
+                <div className="text-center">
+                  <Button onClick={() => router.push('/login')} size="lg" className="shadow">
+                    <UserIcon className="mr-2 h-5 w-5" />
+                    Sign In or Create Account
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto animate-in fade-in-50 duration-500">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>Create & Upload</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="text">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="text">Add Text</TabsTrigger>
+                    <TabsTrigger value="file">Upload File</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="text" className="mt-4">
+                    <div className="grid gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="heading">Heading</Label>
+                        <Input id="heading" placeholder="A short, descriptive heading..." value={headingInput} onChange={(e) => setHeadingInput(e.target.value)} required />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="content">Content</Label>
+                        <Textarea id="content" placeholder="Type your text here..." value={contentInput} onChange={(e) => setContentInput(e.target.value)} className="text-sm min-h-[120px]" required />
+                      </div>
+                      <Button onClick={handleAddText} disabled={!headingInput.trim() || !contentInput.trim()}>Save Text</Button>
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="content">Content</Label>
-                      <Textarea id="content" placeholder="Type your text here..." value={contentInput} onChange={(e) => setContentInput(e.target.value)} className="text-sm min-h-[120px]" required />
+                  </TabsContent>
+                  <TabsContent value="file" className="mt-4">
+                    <div className="space-y-4">
+                      <Input id="file-upload-input" type="file" onChange={(e) => setFileInput(e.target.files?.[0] || null)} />
+                      <Button onClick={handleFileUpload} disabled={!fileInput || uploading} className="w-full">
+                        {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Upload File
+                      </Button>
                     </div>
-                    <Button onClick={handleAddText} disabled={!!user && (!headingInput.trim() || !contentInput.trim())}>Save Text</Button>
-                  </div>
-                </TabsContent>
-                <TabsContent value="file" className="mt-4">
-                  <div className="space-y-4">
-                    <Input id="file-upload-input" type="file" onChange={(e) => setFileInput(e.target.files?.[0] || null)} />
-                    <Button onClick={handleFileUpload} disabled={!!user && (!fileInput || uploading)} className="w-full">
-                      {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Upload File
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle>Your Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Tabs defaultValue="texts">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="texts">Texts ({user ? texts.length : 0})</TabsTrigger>
-                        <TabsTrigger value="files">Files ({user ? files.length : 0})</TabsTrigger>
-                    </TabsList>
-                    <div className="mt-4">
-                        <TabsContent value="texts" className="m-0">
-                          <ScrollArea className="h-[350px] w-full">
-                            {user ? (
-                                texts.length > 0 ? (
-                                    <div className="space-y-2 pr-4">
-                                        {texts.map((text) => (
-                                            <div key={text.id} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                                <p className="flex-1 font-medium break-all text-sm text-foreground truncate">{text.heading}</p>
-                                                <div className="flex gap-1">
-                                                    <Button variant="ghost" size="icon" onClick={() => { setSelectedText(text); setIsTextDetailOpen(true); }}><Eye className="h-4 w-4" /></Button>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'text', id: text.id }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                  <div className="flex items-center justify-center h-[350px]">
-                                    <p className="text-muted-foreground text-center">No texts saved yet.</p>
-                                  </div>
-                                )
-                            ) : (
-                                <div className="flex flex-col gap-4 items-center justify-center h-[350px]">
-                                    <p className="text-muted-foreground text-center">Sign in to view your texts.</p>
-                                    <Button onClick={() => router.push('/login')}>Sign In</Button>
-                                </div>
-                            )}
-                          </ScrollArea>
-                        </TabsContent>
-                        <TabsContent value="files" className="m-0">
-                             <ScrollArea className="h-[350px] w-full">
-                                {user ? (
-                                    files.length > 0 ? (
-                                        <div className="space-y-2 pr-4">
-                                            {files.map((file) => (
-                                                <div key={file.fullPath} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                                    <div className="flex items-center gap-3 overflow-hidden">
-                                                        <FileIcon filename={file.name} />
-                                                        <span className="font-medium break-all text-sm text-foreground truncate">{file.name}</span>
-                                                    </div>
-                                                    <div className="flex gap-1 shrink-0">
-                                                        <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
-                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'file', id: file.fullPath }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                      <div className="flex items-center justify-center h-[350px]">
-                                        <p className="text-muted-foreground text-center">No files uploaded yet.</p>
-                                      </div>
-                                    )
-                                ) : (
-                                  <div className="flex flex-col gap-4 items-center justify-center h-[350px]">
-                                      <p className="text-muted-foreground text-center">Sign in to view your files.</p>
-                                      <Button onClick={() => router.push('/login')}>Sign In</Button>
-                                  </div>
-                                )}
-                             </ScrollArea>
-                        </TabsContent>
-                    </div>
+                  </TabsContent>
                 </Tabs>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>Your Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <Tabs defaultValue="texts">
+                      <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="texts">Texts ({texts.length})</TabsTrigger>
+                          <TabsTrigger value="files">Files ({files.length})</TabsTrigger>
+                      </TabsList>
+                      <div className="mt-4">
+                          <TabsContent value="texts" className="m-0">
+                            <ScrollArea className="h-[350px] w-full">
+                              {texts.length > 0 ? (
+                                  <div className="space-y-2 pr-4">
+                                      {texts.map((text) => (
+                                          <div key={text.id} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
+                                              <p className="flex-1 font-medium break-all text-sm text-foreground truncate">{text.heading}</p>
+                                              <div className="flex gap-1">
+                                                  <Button variant="ghost" size="icon" onClick={() => { setSelectedText(text); setIsTextDetailOpen(true); }}><Eye className="h-4 w-4" /></Button>
+                                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'text', id: text.id }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
+                                              </div>
+                                          </div>
+                                      ))}
+                                  </div>
+                              ) : (
+                                <div className="flex items-center justify-center h-[350px]">
+                                  <p className="text-muted-foreground text-center">No texts saved yet.</p>
+                                </div>
+                              )}
+                            </ScrollArea>
+                          </TabsContent>
+                          <TabsContent value="files" className="m-0">
+                               <ScrollArea className="h-[350px] w-full">
+                                  {files.length > 0 ? (
+                                      <div className="space-y-2 pr-4">
+                                          {files.map((file) => (
+                                              <div key={file.fullPath} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
+                                                  <div className="flex items-center gap-3 overflow-hidden">
+                                                      <FileIcon filename={file.name} />
+                                                      <span className="font-medium break-all text-sm text-foreground truncate">{file.name}</span>
+                                                  </div>
+                                                  <div className="flex gap-1 shrink-0">
+                                                      <a href={file.url} target="_blank" rel="noopener noreferrer" download={file.name}><Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button></a>
+                                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'file', id: file.fullPath }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
+                                                  </div>
+                                              </div>
+                                          ))}
+                                      </div>
+                                  ) : (
+                                    <div className="flex items-center justify-center h-[350px]">
+                                      <p className="text-muted-foreground text-center">No files uploaded yet.</p>
+                                    </div>
+                                  )}
+                               </ScrollArea>
+                          </TabsContent>
+                      </div>
+                  </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
 
       <Dialog open={isAboutDialogOpen} onOpenChange={setIsAboutDialogOpen}>
