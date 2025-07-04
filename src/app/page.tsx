@@ -390,7 +390,7 @@ export default function DashboardPage() {
                                       <div className="space-y-2 pr-4">
                                           {files.map((file) => (
                                               <div key={file.fullPath} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                                  <div className="flex items-center gap-3 overflow-hidden">
+                                                  <div className="flex items-center gap-3 overflow-hidden flex-1">
                                                       <FileIcon filename={file.name} />
                                                       <span className="font-medium break-all text-sm text-foreground truncate">{file.name}</span>
                                                   </div>
