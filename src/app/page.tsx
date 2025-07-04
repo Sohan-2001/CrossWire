@@ -178,7 +178,16 @@ export default function DashboardPage() {
     }
     if (!fileInput) return;
     setUploading(true);
-    const fileRef = storageRef(storage, `users/${user.uid}/files/${fileInput.name}`);
+    
+    const originalName = fileInput.name;
+    const lastDotIndex = originalName.lastIndexOf('.');
+    
+    const nameWithoutExtension = lastDotIndex !== -1 ? originalName.substring(0, lastDotIndex) : originalName;
+    const extension = lastDotIndex !== -1 ? originalName.substring(lastDotIndex) : '';
+    
+    const newFileName = nameWithoutExtension.substring(0, 10) + extension;
+    
+    const fileRef = storageRef(storage, `users/${user.uid}/files/${newFileName}`);
     try {
       await uploadBytes(fileRef, fileInput);
       await fetchFiles(user.uid);
