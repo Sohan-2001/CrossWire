@@ -369,7 +369,7 @@ export default function DashboardPage() {
                                   <div className="space-y-2 pr-4">
                                       {texts.map((text) => (
                                           <div key={text.id} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                              <p className="flex-1 font-medium break-all text-sm text-foreground truncate">{text.heading}</p>
+                                              <p className="flex-1 font-medium text-sm text-foreground truncate">{text.heading}</p>
                                               <div className="flex gap-1">
                                                   <Button variant="ghost" size="icon" onClick={() => { setSelectedText(text); setIsTextDetailOpen(true); }}><Eye className="h-4 w-4" /></Button>
                                                   <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setItemToDelete({ type: 'text', id: text.id }); setIsConfirmDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4" /></Button>
@@ -390,9 +390,9 @@ export default function DashboardPage() {
                                       <div className="space-y-2 pr-4">
                                           {files.map((file) => (
                                               <div key={file.fullPath} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                                  <div className="flex items-center gap-3 overflow-hidden flex-1">
+                                                  <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
                                                       <FileIcon filename={file.name} />
-                                                      <span className="font-medium break-all text-sm text-foreground truncate">{file.name}</span>
+                                                      <span className="font-medium text-sm text-foreground truncate">{file.name}</span>
                                                   </div>
                                                   <div className="flex gap-1 shrink-0">
                                                       <a href={file.url} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button></a>
