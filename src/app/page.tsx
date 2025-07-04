@@ -399,7 +399,7 @@ export default function DashboardPage() {
           <DialogHeader>
             <DialogTitle>About CrossWire</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4 text-sm text-foreground">
+          <div className="font-roboto space-y-4 py-4 text-sm text-foreground">
             <p>
               CrossWire makes it easy to share text and files between your different devices, like your phone and computer.
             </p>
