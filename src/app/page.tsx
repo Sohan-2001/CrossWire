@@ -11,23 +11,26 @@ import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { FileIcon } from '@/components/file-icon';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Copy, Download, Loader2, LogOut, Trash2, Info, User as UserIcon } from 'lucide-react';
+import { Copy, Download, Loader2, LogOut, Trash2, Info, User as UserIcon, Eye } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 
 interface TextItem {
   id: string;
+  heading: string;
   content: string;
   timestamp: number;
 }
@@ -46,10 +49,17 @@ export default function DashboardPage() {
 
   const [texts, setTexts] = useState<TextItem[]>([]);
   const [files, setFiles] = useState<FileItem[]>([]);
-  const [textInput, setTextInput] = useState('');
+  
+  const [headingInput, setHeadingInput] = useState('');
+  const [contentInput, setContentInput] = useState('');
+
   const [fileInput, setFileInput] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  
   const [isAboutDialogOpen, setIsAboutDialogOpen] = useState(false);
+  const [selectedText, setSelectedText] = useState<TextItem | null>(null);
+  const [isTextDetailOpen, setIsTextDetailOpen] = useState(false);
+
 
   // Effect for handling authentication state changes
   useEffect(() => {
@@ -116,15 +126,18 @@ export default function DashboardPage() {
       router.push('/login');
       return;
     }
-    if (!textInput.trim()) return;
+    if (!headingInput.trim() || !contentInput.trim()) return;
+
     const textsRef = ref(db, `users/${user.uid}/texts`);
     const newTextRef = push(textsRef);
     try {
       await set(newTextRef, {
-        content: textInput,
+        heading: headingInput,
+        content: contentInput,
         timestamp: Date.now(),
       });
-      setTextInput('');
+      setHeadingInput('');
+      setContentInput('');
       toast({ title: 'Text saved!' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error saving text', description: (error as Error).message });
@@ -229,10 +242,15 @@ export default function DashboardPage() {
               </Button>
             </>
           ) : (
-             <Button onClick={() => router.push('/login')} variant="outline">
+            <>
+              <Button onClick={() => router.push('/login')} variant="outline" className="hidden sm:inline-flex">
                 <UserIcon className="mr-2 h-4 w-4" />
                 Sign In
               </Button>
+              <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="sm:hidden" aria-label="Sign In">
+                  <UserIcon className="h-5 w-5" />
+              </Button>
+            </>
           )}
         </div>
       </header>
@@ -251,13 +269,15 @@ export default function DashboardPage() {
                 </TabsList>
                 <TabsContent value="text" className="mt-4">
                   <div className="grid gap-4">
-                    <Textarea
-                      placeholder="Type your text here..."
-                      value={textInput}
-                      onChange={(e) => setTextInput(e.target.value)}
-                      className="text-sm min-h-[150px]"
-                    />
-                    <Button onClick={handleAddText} disabled={!!user && !textInput.trim()}>Save Text</Button>
+                    <div className="grid gap-2">
+                      <Label htmlFor="heading">Heading</Label>
+                      <Input id="heading" placeholder="A short, descriptive heading..." value={headingInput} onChange={(e) => setHeadingInput(e.target.value)} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="content">Content</Label>
+                      <Textarea id="content" placeholder="Type your text here..." value={contentInput} onChange={(e) => setContentInput(e.target.value)} className="text-sm min-h-[120px]" required />
+                    </div>
+                    <Button onClick={handleAddText} disabled={!!user && (!headingInput.trim() || !contentInput.trim())}>Save Text</Button>
                   </div>
                 </TabsContent>
                 <TabsContent value="file" className="mt-4">
@@ -291,9 +311,9 @@ export default function DashboardPage() {
                                     <div className="space-y-2 pr-4">
                                         {texts.map((text) => (
                                             <div key={text.id} className="flex justify-between items-center gap-4 p-3 rounded-lg border transition-colors hover:bg-accent">
-                                                <p className="flex-1 break-all text-sm text-foreground">{text.content}</p>
+                                                <p className="flex-1 font-medium break-all text-sm text-foreground truncate">{text.heading}</p>
                                                 <div className="flex gap-1">
-                                                    <Button variant="ghost" size="icon" onClick={() => navigator.clipboard.writeText(text.content).then(() => toast({title: 'Copied to clipboard!'}))}><Copy className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="icon" onClick={() => { setSelectedText(text); setIsTextDetailOpen(true); }}><Eye className="h-4 w-4" /></Button>
                                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteText(text.id)}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
                                             </div>
@@ -369,6 +389,33 @@ export default function DashboardPage() {
           </div>
           <DialogFooter>
             <Button onClick={() => setIsAboutDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isTextDetailOpen} onOpenChange={setIsTextDetailOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{selectedText?.heading}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[50vh] pr-4 my-4">
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+                  {selectedText?.content}
+              </p>
+          </ScrollArea>
+          <DialogFooter className="sm:justify-start gap-2">
+              <Button type="button" onClick={() => {
+                  if (selectedText) {
+                      navigator.clipboard.writeText(selectedText.content)
+                          .then(() => toast({ title: 'Copied to clipboard!' }))
+                  }
+              }}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy Content
+              </Button>
+              <DialogClose asChild>
+                  <Button type="button" variant="secondary">Close</Button>
+              </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
